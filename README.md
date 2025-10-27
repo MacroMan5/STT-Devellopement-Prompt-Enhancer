@@ -101,6 +101,9 @@ Key modules
 
 Precedence (current): built‑in defaults < `config/defaults.yaml` < environment variables. The `--config` override file will be enabled in Sprint 1.
 
+Note on `silence_threshold`
+- In Sprint 1 this setting is reserved; no head/tail silence trimming is applied yet. A simple gate may be added in Sprint 3.
+
 
 ## CLI Usage Examples
 - Enhance a text string:
