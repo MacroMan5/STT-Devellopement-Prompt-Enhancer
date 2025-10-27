@@ -70,7 +70,8 @@ class AudioRecorder:
 
         if sd is None:
             raise AudioCaptureError(
-                "sounddevice dependency missing. Install it with `pip install sounddevice` to record audio."
+                "sounddevice dependency missing. Install it with "
+                "`pip install sounddevice` to record audio."
             )
 
         self._stream = sd.InputStream(
@@ -104,7 +105,10 @@ class AudioRecorder:
         duration_seconds = len(audio) / self.sample_rate
         if duration_seconds > self.max_record_seconds:
             raise AudioCaptureError(
-                f"Recording exceeded max duration ({duration_seconds:.2f}s > {self.max_record_seconds}s)"
+                (
+                    "Recording exceeded max duration "
+                    f"({duration_seconds:.2f}s > {self.max_record_seconds}s)"
+                )
             )
 
         wav_bytes = self._to_wav(audio)
