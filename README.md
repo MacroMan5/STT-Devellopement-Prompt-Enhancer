@@ -166,6 +166,7 @@ print(outcome.saved_prompt.prompt_path)
 
 
 ## Troubleshooting
+See `docs/TROUBLESHOOTING.md` for quick fixes to common issues.
 - sounddevice / PortAudio errors
   - Install PortAudio (see prerequisites). On Linux, verify the microphone: `arecord -l` or `pactl list sources`.
 - Headless or no GUI input
