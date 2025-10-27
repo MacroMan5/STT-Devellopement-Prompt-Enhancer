@@ -1,2 +1,0 @@
-[console_scripts]
-lazy-ptt = lazy_ptt.cli:main
