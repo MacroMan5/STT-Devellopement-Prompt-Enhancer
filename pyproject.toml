@@ -9,7 +9,7 @@ description = "Push-to-talk speech-to-text + prompt enhancement toolkit"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
-authors = [{name = "Therouxe", email = ""}]
+authors = [{name = "Therouxe"}]
 keywords = ["speech-to-text", "prompt", "push-to-talk", "llm"]
 classifiers = [
   "Programming Language :: Python :: 3",
