@@ -9,6 +9,7 @@ from .config import AppConfig, ConfigError, load_config
 from .prompt.manager import PromptStorage
 from .services.daemon import PTTDaemon
 from .services.ptt_service import PTTService
+from .audio.devices import list_input_devices
 
 
 def _configure_logging(verbose: bool) -> None:
@@ -59,6 +60,8 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print a summary to stdout after each capture.",
     )
+
+    devices = subparsers.add_parser("devices", help="List input audio devices and indices.")
 
     return parser
 
@@ -147,12 +150,27 @@ def cmd_daemon(service: PTTService, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_devices(_service: PTTService, _args: argparse.Namespace) -> int:
+    devices = list_input_devices()
+    if not devices:
+        print("No input devices found or sounddevice not installed. Install 'sounddevice' and try again.")
+        print("To select a device, set environment variable PTT_INPUT_DEVICE_INDEX to the device index.")
+        return 0
+    print("Input devices:")
+    for idx, name in devices:
+        print(f"[{idx}] {name}")
+    print("\nSelect by setting env var, e.g.: PTT_INPUT_DEVICE_INDEX=0 lazy-ptt listen")
+    return 0
+
+
 COMMAND_HANDLERS = {
     "listen": cmd_listen,
     "enhance-text": cmd_enhance_text,
     "process-audio": cmd_process_audio,
     "create-feature": cmd_create_feature,
     "daemon": cmd_daemon,
+    "devices": cmd_devices,
+    # registered at bottom
 }
 
 
