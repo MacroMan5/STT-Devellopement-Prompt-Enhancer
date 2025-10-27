@@ -39,13 +39,22 @@ def build_parser() -> argparse.ArgumentParser:
     enhance_text.add_argument("--story-title", help="Optional story title.")
     enhance_text.add_argument("--auto-move", action="store_true", help="Immediately move prompt into project-management.")
 
-    audio = subparsers.add_parser("process-audio", help="Transcribe and enhance an existing audio file.")
+    audio = subparsers.add_parser(
+        "process-audio", help="Transcribe and enhance an existing audio file."
+    )
     audio.add_argument("path", type=Path, help="Path to audio file (wav/mp3/flac).")
     audio.add_argument("--story-id", help="Optional story ID override.")
     audio.add_argument("--story-title", help="Optional story title.")
-    audio.add_argument("--auto-move", action="store_true", help="Immediately move prompt into project-management.")
+    audio.add_argument(
+        "--auto-move",
+        action="store_true",
+        help="Immediately move prompt into project-management.",
+    )
 
-    create = subparsers.add_parser("create-feature", help="Move a generated prompt into project-management.")
+    create = subparsers.add_parser(
+        "create-feature",
+        help="Move a generated prompt into project-management.",
+    )
     create.add_argument("prompt_path", type=Path, help="Path to enhanced prompt markdown file.")
     create.add_argument("--story-title", help="Optional story title for README.txt.")
 

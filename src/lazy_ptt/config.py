@@ -186,7 +186,10 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
     if prompt_output_root_env:
         prompt_output_root = Path(prompt_output_root_env).expanduser().resolve()
     else:
-        prompt_output_root = (base_dir / defaults.get("ptt", {}).get("output_root", "outputs/prompts")).resolve()
+        prompt_output_root = (
+            base_dir
+            / defaults.get("ptt", {}).get("output_root", "outputs/prompts")
+        ).resolve()
 
     ptt_defaults = defaults.get("ptt", {})
     whisper_defaults = defaults.get("whisper", {})
@@ -195,7 +198,10 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
 
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if not openai_api_key:
-        raise ConfigError("OPENAI_API_KEY is not set. Provide it via environment variable or .env file.")
+        raise ConfigError(
+            "OPENAI_API_KEY is not set. "
+            "Provide it via environment variable or .env file."
+        )
 
     paths = ProjectPaths(
         repository_root=base_dir,
