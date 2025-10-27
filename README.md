@@ -37,9 +37,9 @@ OPENAI_API_KEY=sk-your-key
 WHISPER_DEVICE=cpu
 WHISPER_COMPUTE_TYPE=int8  # or float32
 ```
-- Defaults are read from `config/defaults.yaml`. Environment variables override defaults.
+- Defaults are read from `config/defaults.yaml` (if present). Environment variables override file defaults.
 - `--config` overrides: you can pass a YAML file to overlay the built‑in defaults.
-  - Precedence: built‑in defaults < `--config` YAML < environment variables.
+  - Precedence: built‑in defaults < repo `config/defaults.yaml` (if present) < `--config` YAML (if passed) < environment variables.
   - Example: `python -m lazy_ptt.cli --config config/custom.yaml enhance-text --text "hello"`
 
 4) Run
@@ -99,7 +99,7 @@ Key modules
 - `WHISPER_COMPUTE_TYPE` (`float16`, `int8`, or `float32`)
 - `LAZY_PTT_HOME` (override base directory for outputs and caches)
 
-Precedence (current): built‑in defaults < `config/defaults.yaml` < environment variables. The `--config` override file will be enabled in Sprint 1.
+Precedence: built‑in defaults < repo `config/defaults.yaml` (if present) < `--config` YAML (if passed) < environment variables.
 
 Note on `silence_threshold`
 - In Sprint 1 this setting is reserved; no head/tail silence trimming is applied yet. A simple gate may be added in Sprint 3.

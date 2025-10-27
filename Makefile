@@ -1,5 +1,7 @@
 .PHONY: setup lint test run-enhance run-audio run-listen
 
+TEXT ?= Sample enhancement from Makefile
+
 setup:
 	python -m pip install --upgrade pip
 	pip install -e '.[api,ui]'
@@ -15,7 +17,6 @@ test:
 	pytest -q
 
 run-enhance:
-	@TEXT?=Sample enhancement from Makefile
 	python -m lazy_ptt.cli --verbose enhance-text --text "$(TEXT)" ${AUTO_MOVE}
 
 run-audio:
@@ -24,4 +25,3 @@ run-audio:
 
 run-listen:
 	python -m lazy_ptt.cli --verbose listen ${AUTO_MOVE}
-
