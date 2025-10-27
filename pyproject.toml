@@ -47,3 +47,21 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 lazy_ptt = ["data/*.yaml"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = [
+  "E", "F",  # pycodestyle + pyflakes
+]
+ignore = []
+exclude = [
+  ".git",
+  ".venv",
+  "build",
+  "dist",
+]

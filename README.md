@@ -182,6 +182,10 @@ pytest -q
 - Unit tests live under `tests/unit/`.
 - Roadmap & tasks: see `SPRINT-1.md`, `SPRINT-2.md`, `SPRINT-3.md`.
 
+Optional dev tools
+- Lint/format via `ruff` and `black` (configured in `pyproject.toml`).
+- Pre-commit hooks are available; enable with `make setup` or `pre-commit install`.
+
 
 ## License
 MIT — see `LICENSE`.
