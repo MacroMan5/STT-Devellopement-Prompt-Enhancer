@@ -178,13 +178,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     _configure_logging(args.verbose)
+    # Commands that do not require full service wiring
+    if args.command == "devices":
+        return cmd_devices(None, args)  # type: ignore[arg-type]
     try:
         config = _resolve_config(args)
         service = PTTService.from_config(config)
     except ConfigError as exc:
         parser.error(str(exc))
         return 2
-
     handler = COMMAND_HANDLERS[args.command]
     return handler(service, args)
 
