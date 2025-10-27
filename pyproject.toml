@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-api = ["fastapi>=0.110.0", "uvicorn[standard]>=0.23.0"]
+api = ["fastapi>=0.110.0", "uvicorn[standard]>=0.23.0", "python-multipart>=0.0.9"]
 ui = ["rich>=13.7.0"]
 
 [project.urls]
@@ -38,6 +38,7 @@ Issues = "https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer/issues"
 
 [project.scripts]
 lazy-ptt = "lazy_ptt.cli:main"
+lazy-ptt-api = "lazy_ptt.api.server:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
