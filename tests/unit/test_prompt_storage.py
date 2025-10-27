@@ -12,7 +12,12 @@ def _sample_prompt() -> EnhancedPrompt:
         objectives=["Capture voice brief", "Enhance prompt", "Save to project management"],
         risks=["Microphone hardware unavailable"],
         milestones=["Prototype", "User story ready"],
-        sections=[PromptSection(title="Implementation", content="Outline the service architecture.")],
+        sections=[
+            PromptSection(
+                title="Implementation",
+                content="Outline the service architecture.",
+            )
+        ],
         acceptance_criteria=["Prompt saved to staging directory"],
         suggested_story_id="US-99.1",
         original_brief="Add a PTT command",

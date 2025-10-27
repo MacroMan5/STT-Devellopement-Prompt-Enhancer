@@ -44,7 +44,9 @@ class WhisperTranscriber:
             )
         return self._model
 
-    def transcribe(self, buffer: AudioBuffer, language: Optional[str] = None) -> TranscriptionResult:
+    def transcribe(
+        self, buffer: AudioBuffer, language: Optional[str] = None
+    ) -> TranscriptionResult:
         model = self._ensure_model()
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
             tmp.write(buffer.wav_bytes)
@@ -70,7 +72,9 @@ class WhisperTranscriber:
             temperature=getattr(info, "temperature", 0.0),
         )
 
-    def transcribe_file(self, file_path: Path, language: Optional[str] = None) -> TranscriptionResult:
+    def transcribe_file(
+        self, file_path: Path, language: Optional[str] = None
+    ) -> TranscriptionResult:
         model = self._ensure_model()
         segments, info = model.transcribe(
             str(file_path),

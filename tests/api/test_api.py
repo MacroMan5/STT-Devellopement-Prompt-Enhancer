@@ -17,15 +17,31 @@ class _FakeSaved:
 class _FakeOutcome:
     def __init__(self, text: str = "hello") -> None:
         self.saved_prompt = _FakeSaved("US-1", Path("/tmp/US-1.md"))
-        self.enhanced = type("Enhanced", (), {"summary": f"Summary for {text}", "work_type": "FEATURE"})()
+        self.enhanced = type(
+            "Enhanced",
+            (),
+            {"summary": f"Summary for {text}", "work_type": "FEATURE"},
+        )()
         self.transcription = type("T", (), {"text": text})()
 
 
 class _FakeService:
-    def enhance_text(self, text: str, story_id: Optional[str] = None, story_title: Optional[str] = None, auto_move: bool = False):
+    def enhance_text(
+        self,
+        text: str,
+        story_id: Optional[str] = None,
+        story_title: Optional[str] = None,
+        auto_move: bool = False,
+    ):
         return _FakeOutcome(text)
 
-    def process_audio_file(self, _path: Path, story_id: Optional[str] = None, story_title: Optional[str] = None, auto_move: bool = False):
+    def process_audio_file(
+        self,
+        _path: Path,
+        story_id: Optional[str] = None,
+        story_title: Optional[str] = None,
+        auto_move: bool = False,
+    ):
         return _FakeOutcome("from-audio")
 
 
@@ -56,4 +72,3 @@ def test_process_audio_endpoint(tmp_path):
     assert resp.status_code == 200
     body = resp.json()
     assert body["summary"].startswith("Summary")
-
