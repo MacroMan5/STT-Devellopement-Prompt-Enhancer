@@ -71,9 +71,9 @@ def _load_text(args: argparse.Namespace) -> str:
     raise ConfigError("Provide --text or --file with content to enhance.")
 
 
-def _resolve_config(_: argparse.Namespace) -> AppConfig:
-    # Placeholder for future override support. Currently we honour environment variables only.
-    return load_config()
+def _resolve_config(args: argparse.Namespace) -> AppConfig:
+    # Precedence: built-in defaults < --config YAML < environment variables.
+    return load_config(args.config) if getattr(args, "config", None) else load_config()
 
 
 def cmd_listen(service: PTTService, args: argparse.Namespace) -> int:

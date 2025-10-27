@@ -38,7 +38,9 @@ WHISPER_DEVICE=cpu
 WHISPER_COMPUTE_TYPE=int8  # or float32
 ```
 - Defaults are read from `config/defaults.yaml`. Environment variables override defaults.
-- Note: the `--config` CLI flag is reserved for a future override file (Sprint 1 task).
+- `--config` overrides: you can pass a YAML file to overlay the built‑in defaults.
+  - Precedence: built‑in defaults < `--config` YAML < environment variables.
+  - Example: `python -m lazy_ptt.cli --config config/custom.yaml enhance-text --text "hello"`
 
 4) Run
 - Enhance text only (tests OpenAI):
@@ -181,4 +183,3 @@ pytest -q
 
 ## License
 MIT — see `LICENSE`.
-
