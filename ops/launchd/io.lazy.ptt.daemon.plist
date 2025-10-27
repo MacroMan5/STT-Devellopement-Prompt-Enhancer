@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>io.lazy.ptt.daemon</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/Users/USERNAME/.venv/bin/lazy-ptt</string>
+      <string>daemon</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>OPENAI_API_KEY</key>
+      <string>REPLACE_ME</string>
+      <key>PROJECT_MANAGEMENT_ROOT</key>
+      <string>/Users/USERNAME/project-management</string>
+      <key>PTT_OUTPUT_ROOT</key>
+      <string>/Users/USERNAME/outputs/prompts</string>
+    </dict>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/lazy-ptt-daemon.out</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/lazy-ptt-daemon.err</string>
+  </dict>
+</plist>
+

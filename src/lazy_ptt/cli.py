@@ -6,9 +6,9 @@ import sys
 from pathlib import Path
 
 from .config import AppConfig, ConfigError, load_config
-from .prompt.manager import PromptStorage
 from .services.daemon import PTTDaemon
 from .services.ptt_service import PTTService
+from .audio.devices import list_input_devices
 
 
 def _configure_logging(verbose: bool) -> None:
@@ -21,30 +21,58 @@ def _configure_logging(verbose: bool) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="lazy_dev push-to-talk workflow")
-    parser.add_argument("--config", type=Path, help="Optional path to overrides YAML (unused placeholder).")
-    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging output.")
+    parser.add_argument(
+        "--config",
+        type=Path,
+        help="Optional path to overrides YAML (unused placeholder).",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose logging output.",
+    )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     listen = subparsers.add_parser("listen", help="Capture audio via push-to-talk hotkey.")
     listen.add_argument("--story-id", help="Override story ID for the saved prompt.")
-    listen.add_argument("--story-title", help="Optional story title to record in metadata.")
-    listen.add_argument("--auto-move", action="store_true", help="Immediately move prompt into project-management.")
+    listen.add_argument(
+        "--story-title",
+        help="Optional story title to record in metadata.",
+    )
+    listen.add_argument(
+        "--auto-move",
+        action="store_true",
+        help="Immediately move prompt into project-management.",
+    )
 
     enhance_text = subparsers.add_parser("enhance-text", help="Enhance a text brief directly.")
     enhance_text.add_argument("--text", help="Text brief to enhance.")
     enhance_text.add_argument("--file", type=Path, help="Path to a text file containing the brief.")
     enhance_text.add_argument("--story-id", help="Optional story ID override.")
     enhance_text.add_argument("--story-title", help="Optional story title.")
-    enhance_text.add_argument("--auto-move", action="store_true", help="Immediately move prompt into project-management.")
+    enhance_text.add_argument(
+        "--auto-move",
+        action="store_true",
+        help="Immediately move prompt into project-management.",
+    )
 
-    audio = subparsers.add_parser("process-audio", help="Transcribe and enhance an existing audio file.")
+    audio = subparsers.add_parser(
+        "process-audio", help="Transcribe and enhance an existing audio file."
+    )
     audio.add_argument("path", type=Path, help="Path to audio file (wav/mp3/flac).")
     audio.add_argument("--story-id", help="Optional story ID override.")
     audio.add_argument("--story-title", help="Optional story title.")
-    audio.add_argument("--auto-move", action="store_true", help="Immediately move prompt into project-management.")
+    audio.add_argument(
+        "--auto-move",
+        action="store_true",
+        help="Immediately move prompt into project-management.",
+    )
 
-    create = subparsers.add_parser("create-feature", help="Move a generated prompt into project-management.")
+    create = subparsers.add_parser(
+        "create-feature",
+        help="Move a generated prompt into project-management.",
+    )
     create.add_argument("prompt_path", type=Path, help="Path to enhanced prompt markdown file.")
     create.add_argument("--story-title", help="Optional story title for README.txt.")
 
@@ -59,6 +87,8 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print a summary to stdout after each capture.",
     )
+
+    subparsers.add_parser("devices", help="List input audio devices and indices.")
 
     return parser
 
@@ -142,8 +172,33 @@ def cmd_daemon(service: PTTService, args: argparse.Namespace) -> int:
                 f"({outcome.enhanced.work_type})"
             )
 
-    daemon = PTTDaemon(service, auto_move=auto_move, on_cycle=_log_cycle if args.verbose_cycle else None)
+    daemon = PTTDaemon(
+        service,
+        auto_move=auto_move,
+        on_cycle=_log_cycle if args.verbose_cycle else None,
+    )
     daemon.run()
+    return 0
+
+
+def cmd_devices(_service: PTTService | None, _args: argparse.Namespace) -> int:
+    devices = list_input_devices()
+    if not devices:
+        print(
+            "No input devices found or 'sounddevice' not installed. "
+            "Install it and try again."
+        )
+        print(
+            "To select a device, set env var PTT_INPUT_DEVICE_INDEX to the device index."
+        )
+        return 0
+    print("Input devices:")
+    for idx, name in devices:
+        print(f"[{idx}] {name}")
+    print(
+        "\nSelect by setting env var, e.g.: "
+        "PTT_INPUT_DEVICE_INDEX=0 lazy-ptt listen"
+    )
     return 0
 
 
@@ -153,6 +208,7 @@ COMMAND_HANDLERS = {
     "process-audio": cmd_process_audio,
     "create-feature": cmd_create_feature,
     "daemon": cmd_daemon,
+    "devices": cmd_devices,
 }
 
 
@@ -160,13 +216,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     _configure_logging(args.verbose)
+    # Commands that do not require full service wiring
+    if args.command == "devices":
+        return cmd_devices(None, args)
     try:
         config = _resolve_config(args)
         service = PTTService.from_config(config)
     except ConfigError as exc:
         parser.error(str(exc))
         return 2
-
     handler = COMMAND_HANDLERS[args.command]
     return handler(service, args)
 

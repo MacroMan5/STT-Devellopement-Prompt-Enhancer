@@ -1,0 +1,22 @@
+[Unit]
+Description=lazy-ptt daemon (push-to-talk listener)
+After=network.target sound.target
+
+[Service]
+Type=simple
+Environment=PYTHONUNBUFFERED=1
+# Optionally point to your project dir or set LAZY_PTT_HOME
+WorkingDirectory=%h
+ExecStart=%h/.venv/bin/lazy-ptt daemon
+Restart=on-failure
+RestartSec=3
+
+# Example environment overrides (edit or provide an EnvironmentFile)
+# Environment=OPENAI_API_KEY=... 
+# Environment=PROJECT_MANAGEMENT_ROOT=%h/project-management
+# Environment=PTT_OUTPUT_ROOT=%h/outputs/prompts
+# Environment=PTT_INPUT_DEVICE_INDEX=0
+
+[Install]
+WantedBy=default.target
+

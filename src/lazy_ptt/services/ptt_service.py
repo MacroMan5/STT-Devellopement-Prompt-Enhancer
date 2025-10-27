@@ -122,7 +122,9 @@ class PTTService:
         auto_move: bool = False,
     ) -> PTTOutcome:
         LOGGER.debug("Transcribing audio file: %s", file_path)
-        transcription = self.transcriber.transcribe_file(file_path, language=self.config.ptt.language)
+        transcription = self.transcriber.transcribe_file(
+            file_path, language=self.config.ptt.language
+        )
         if not transcription.text:
             raise ConfigError(f"No transcription produced for {file_path}")
         enhanced = self.enhancer.enhance(transcription.text)

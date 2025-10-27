@@ -141,6 +141,54 @@ project-management/user-story-prompts/US-PTT-20250101-123000/
 ```
 
 
+## REST API (FastAPI)
+Run the API locally:
+```
+lazy-ptt-api  # serves on http://127.0.0.1:8000
+```
+
+cURL examples
+- Enhance raw text:
+```
+curl -s http://127.0.0.1:8000/enhance-text \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"Implement push-to-talk capture"}' | jq .
+```
+- Process an audio file:
+```
+curl -s -F 'audio=@notes/brief.wav' http://127.0.0.1:8000/process-audio | jq .
+```
+- Trigger a one-time PTT cycle (demo; requires active desktop session):
+```
+curl -s -X POST http://127.0.0.1:8000/listen-once | jq .
+```
+
+
+## Devices
+- List available input devices and indices:
+```
+lazy-ptt devices
+```
+- Select a device for the next run:
+```
+PTT_INPUT_DEVICE_INDEX=0 lazy-ptt listen
+```
+
+
+## Services (optional)
+- systemd (Linux): copy `ops/systemd/lazy-ptt-daemon.service` to `~/.config/systemd/user/` and edit paths/env.
+```
+systemctl --user daemon-reload
+systemctl --user enable --now lazy-ptt-daemon
+journalctl --user -u lazy-ptt-daemon -f
+```
+- launchd (macOS): copy `ops/launchd/io.lazy.ptt.daemon.plist` to `~/Library/LaunchAgents/` and edit paths/env.
+```
+launchctl load ~/Library/LaunchAgents/io.lazy.ptt.daemon.plist
+launchctl start io.lazy.ptt.daemon
+```
+
+
 ## Integration With Claude (or Other Agents)
 Pick what fits your template best:
 
@@ -158,7 +206,7 @@ outcome = service.enhance_text("Implement PTT capture", auto_move=True)
 print(outcome.saved_prompt.prompt_path)
 ```
 
-- REST API (planned in Sprint 2)
+- REST API
   - `POST /enhance-text`, `POST /process-audio`, `POST /listen-once` via FastAPI wrapper.
 
 - Using Claude as enhancer

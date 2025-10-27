@@ -186,7 +186,10 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
     if prompt_output_root_env:
         prompt_output_root = Path(prompt_output_root_env).expanduser().resolve()
     else:
-        prompt_output_root = (base_dir / defaults.get("ptt", {}).get("output_root", "outputs/prompts")).resolve()
+        prompt_output_root = (
+            base_dir
+            / defaults.get("ptt", {}).get("output_root", "outputs/prompts")
+        ).resolve()
 
     ptt_defaults = defaults.get("ptt", {})
     whisper_defaults = defaults.get("whisper", {})
@@ -195,7 +198,10 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
 
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if not openai_api_key:
-        raise ConfigError("OPENAI_API_KEY is not set. Provide it via environment variable or .env file.")
+        raise ConfigError(
+            "OPENAI_API_KEY is not set. "
+            "Provide it via environment variable or .env file."
+        )
 
     paths = ProjectPaths(
         repository_root=base_dir,
@@ -205,7 +211,9 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
 
     ptt_config = PTTConfig(
         language=os.getenv("PTT_LANGUAGE", ptt_defaults.get("language", "en")),
-        sample_rate=_coerce_int(os.getenv("PTT_SAMPLE_RATE"), ptt_defaults.get("sample_rate", 16_000)),
+        sample_rate=_coerce_int(
+            os.getenv("PTT_SAMPLE_RATE"), ptt_defaults.get("sample_rate", 16_000)
+        ),
         chunk_duration_ms=_coerce_int(
             os.getenv("PTT_CHUNK_DURATION_MS"), ptt_defaults.get("chunk_duration_ms", 64)
         ),
@@ -216,14 +224,24 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
             os.getenv("PTT_MAX_RECORD_SECONDS"), ptt_defaults.get("max_record_seconds", 120)
         ),
         hotkey=os.getenv("PTT_HOTKEY", ptt_defaults.get("hotkey", "space")),
-        input_device_index=_coerce_int(os.getenv("PTT_INPUT_DEVICE_INDEX"), -1) if os.getenv("PTT_INPUT_DEVICE_INDEX") else None,
+        input_device_index=(
+            _coerce_int(os.getenv("PTT_INPUT_DEVICE_INDEX"), -1)
+            if os.getenv("PTT_INPUT_DEVICE_INDEX")
+            else None
+        ),
     )
 
     whisper_config = WhisperConfig(
-        model_size=os.getenv("WHISPER_MODEL_SIZE", whisper_defaults.get("model_size", "medium")),
+        model_size=os.getenv(
+            "WHISPER_MODEL_SIZE", whisper_defaults.get("model_size", "medium")
+        ),
         device=os.getenv("WHISPER_DEVICE", whisper_defaults.get("device", "cuda")),
-        compute_type=os.getenv("WHISPER_COMPUTE_TYPE", whisper_defaults.get("compute_type", "float16")),
-        download_root=(base_dir / whisper_defaults.get("download_root", ".cache/whisper")).resolve(),
+        compute_type=os.getenv(
+            "WHISPER_COMPUTE_TYPE", whisper_defaults.get("compute_type", "float16")
+        ),
+        download_root=(
+            base_dir / whisper_defaults.get("download_root", ".cache/whisper")
+        ).resolve(),
     )
 
     openai_config = OpenAIConfig(
@@ -249,7 +267,13 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
         ),
     )
 
-    return AppConfig(paths=paths, ptt=ptt_config, whisper=whisper_config, openai=openai_config, prompt=prompt_config)
+    return AppConfig(
+        paths=paths,
+        ptt=ptt_config,
+        whisper=whisper_config,
+        openai=openai_config,
+        prompt=prompt_config,
+    )
 
 
 def dump_config(config: AppConfig) -> Dict[str, Any]:

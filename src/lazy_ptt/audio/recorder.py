@@ -4,13 +4,13 @@ import io
 import threading
 import wave
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Optional
 
 import numpy as np
 
 try:
     import sounddevice as sd  # type: ignore
-except ImportError:  # pragma: no cover - handled via runtime check
+except (ImportError, OSError):  # pragma: no cover - handle missing library or PortAudio
     sd = None
 
 
@@ -70,7 +70,8 @@ class AudioRecorder:
 
         if sd is None:
             raise AudioCaptureError(
-                "sounddevice dependency missing. Install it with `pip install sounddevice` to record audio."
+                "sounddevice dependency missing. Install it with "
+                "`pip install sounddevice` to record audio."
             )
 
         self._stream = sd.InputStream(
@@ -104,7 +105,10 @@ class AudioRecorder:
         duration_seconds = len(audio) / self.sample_rate
         if duration_seconds > self.max_record_seconds:
             raise AudioCaptureError(
-                f"Recording exceeded max duration ({duration_seconds:.2f}s > {self.max_record_seconds}s)"
+                (
+                    "Recording exceeded max duration "
+                    f"({duration_seconds:.2f}s > {self.max_record_seconds}s)"
+                )
             )
 
         wav_bytes = self._to_wav(audio)

@@ -33,7 +33,13 @@ class _FakeTranscriber:
 
     def transcribe(self, _buffer: AudioBuffer, language: str | None = None):
         self.calls += 1
-        return type("Result", (), {"text": self.text, "language": language, "duration": 1.5, "temperature": 0.0})()
+        payload = {
+            "text": self.text,
+            "language": language,
+            "duration": 1.5,
+            "temperature": 0.0,
+        }
+        return type("Result", (), payload)()
 
     def transcribe_file(self, _path: Path, language: str | None = None):
         return self.transcribe(AudioBuffer(b"", 16000, 1, 0.0), language=language)
@@ -115,7 +121,11 @@ def _build_service(tmp_path: Path, text: str) -> PTTService:
     recorder = _FakeRecorder(buffer)
     transcriber = _FakeTranscriber(text)
     enhancer = _FakeEnhancer()
-    storage = PromptStorage(config.paths.prompt_output_root, config.prompt.filename_pattern, config.prompt.metadata_filename)
+    storage = PromptStorage(
+        config.paths.prompt_output_root,
+        config.prompt.filename_pattern,
+        config.prompt.metadata_filename,
+    )
     hotkey = _FakeHotkeyListener()
     return PTTService(config, recorder, transcriber, enhancer, storage, hotkey)
 
@@ -134,7 +144,12 @@ def test_process_audio_buffer_moves_when_requested(tmp_path: Path) -> None:
     service = _build_service(tmp_path, "Implement push-to-talk")
 
     buffer = AudioBuffer(b"data", sample_rate=16000, channels=1, duration_seconds=1.0)
-    outcome = service.process_audio_buffer(buffer, story_id="US-PTT", story_title="PTT Workflow", auto_move=True)
+    outcome = service.process_audio_buffer(
+        buffer,
+        story_id="US-PTT",
+        story_title="PTT Workflow",
+        auto_move=True,
+    )
 
     dest_dir = service.config.paths.project_management_root / "user-story-prompts" / "US-PTT"
     assert dest_dir.exists()

@@ -36,7 +36,11 @@ class PromptStorage:
         self.output_root.mkdir(parents=True, exist_ok=True)
 
     def save(self, prompt: EnhancedPrompt, story_id: Optional[str] = None) -> SavedPrompt:
-        story_id = (story_id or prompt.suggested_story_id or self._generate_story_id(prompt.work_type)).upper()
+        story_id = (
+            story_id
+            or prompt.suggested_story_id
+            or self._generate_story_id(prompt.work_type)
+        ).upper()
         safe_story_id = SAFE_STORY_PATTERN.sub("-", story_id).strip("-")
         if not safe_story_id:
             raise ValueError("Story ID resolved to an empty string")
@@ -64,7 +68,11 @@ class PromptStorage:
         metadata_path = story_dir / self.metadata_filename
         metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
-        return SavedPrompt(story_id=safe_story_id, prompt_path=prompt_path, metadata_path=metadata_path)
+        return SavedPrompt(
+            story_id=safe_story_id,
+            prompt_path=prompt_path,
+            metadata_path=metadata_path,
+        )
 
     def relocate_to_project_management(
         self,

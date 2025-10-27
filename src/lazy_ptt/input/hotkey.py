@@ -4,7 +4,10 @@ import threading
 from dataclasses import dataclass
 from typing import Callable, Optional
 
-from pynput import keyboard
+try:
+    from pynput import keyboard
+except Exception:  # pragma: no cover - allow import in headless CI
+    keyboard = None  # type: ignore
 
 
 class HotkeyListenerError(RuntimeError):
@@ -39,6 +42,10 @@ class HotkeyListener:
 
         if self._listener is not None:
             raise HotkeyListenerError("Hotkey listener already running")
+        if keyboard is None:
+            raise HotkeyListenerError(
+                "pynput is unavailable or no GUI backend is present; hotkey listening is disabled."
+            )
 
         def on_press(key: keyboard.Key | keyboard.KeyCode) -> None:
             if self._matches_hotkey(key):
@@ -72,4 +79,3 @@ class HotkeyListener:
 
     def is_running(self) -> bool:
         return self._is_active.is_set()
-

@@ -13,7 +13,8 @@ from ..config import OpenAIConfig
 
 
 SYSTEM_PROMPT = """
-You are an elite software architect and product lead. Transform terse engineering briefs into full, actionable plans.
+You are an elite software architect and product lead.
+Transform terse engineering briefs into full, actionable plans.
 
 Return a JSON object with:
 - work_type: one of ["NEW_PROJECT","FEATURE","HOTFIX","REFACTOR","ENHANCEMENT","DOCUMENTATION"]
@@ -116,7 +117,10 @@ class PromptEnhancer:
         payload = _extract_text(response)
         data = json.loads(payload)
         sections = [
-            PromptSection(title=item.get("title", "Details"), content=item.get("content", "").strip())
+            PromptSection(
+                title=item.get("title", "Details"),
+                content=item.get("content", "").strip(),
+            )
             for item in data.get("sections", [])
         ]
 
