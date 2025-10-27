@@ -181,7 +181,7 @@ def cmd_daemon(service: PTTService, args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_devices(_service: PTTService, _args: argparse.Namespace) -> int:
+def cmd_devices(_service: PTTService | None, _args: argparse.Namespace) -> int:
     devices = list_input_devices()
     if not devices:
         print(
@@ -209,7 +209,6 @@ COMMAND_HANDLERS = {
     "create-feature": cmd_create_feature,
     "daemon": cmd_daemon,
     "devices": cmd_devices,
-    # registered at bottom
 }
 
 
@@ -219,7 +218,7 @@ def main(argv: list[str] | None = None) -> int:
     _configure_logging(args.verbose)
     # Commands that do not require full service wiring
     if args.command == "devices":
-        return cmd_devices(None, args)  # type: ignore[arg-type]
+        return cmd_devices(None, args)
     try:
         config = _resolve_config(args)
         service = PTTService.from_config(config)

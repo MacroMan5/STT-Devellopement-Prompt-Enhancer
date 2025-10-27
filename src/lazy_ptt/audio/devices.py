@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 try:
     import sounddevice as sd  # type: ignore
-except ImportError:  # pragma: no cover
+except (ImportError, OSError):  # pragma: no cover - handle missing library or PortAudio
     sd = None
 
 
@@ -25,6 +25,7 @@ def list_input_devices() -> List[Tuple[int, str]]:
         try:
             if info.get("max_input_channels", 0) > 0:
                 devices.append((idx, info.get("name", f"Device {idx}")))
-        except Exception:
+        except (KeyError, AttributeError, TypeError):
+            # Skip malformed device entries returned by backend
             continue
     return devices

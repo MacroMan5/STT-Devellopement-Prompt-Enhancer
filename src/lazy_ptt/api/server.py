@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 
 from ..config import AppConfig, ConfigError, load_config
@@ -73,7 +74,8 @@ def build_app(service_factory=_service_from_env) -> FastAPI:
                 tmp.write(data)
                 tmp_path = Path(tmp.name)
             try:
-                outcome = service.process_audio_file(
+                outcome = await run_in_threadpool(
+                    service.process_audio_file,
                     tmp_path,
                     story_id=story_id,
                     story_title=story_title,

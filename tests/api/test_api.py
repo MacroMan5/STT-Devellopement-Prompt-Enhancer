@@ -14,15 +14,22 @@ class _FakeSaved:
         self.prompt_path = path
 
 
+class _FakeEnhanced:
+    def __init__(self, summary: str, work_type: str = "FEATURE") -> None:
+        self.summary = summary
+        self.work_type = work_type
+
+
+class _FakeTranscription:
+    def __init__(self, text: str) -> None:
+        self.text = text
+
+
 class _FakeOutcome:
     def __init__(self, text: str = "hello") -> None:
         self.saved_prompt = _FakeSaved("US-1", Path("/tmp/US-1.md"))
-        self.enhanced = type(
-            "Enhanced",
-            (),
-            {"summary": f"Summary for {text}", "work_type": "FEATURE"},
-        )()
-        self.transcription = type("T", (), {"text": text})()
+        self.enhanced = _FakeEnhanced(f"Summary for {text}", "FEATURE")
+        self.transcription = _FakeTranscription(text)
 
 
 class _FakeService:
