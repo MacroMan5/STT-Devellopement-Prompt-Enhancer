@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 
 from .config import AppConfig, ConfigError, load_config
-from .prompt.manager import PromptStorage
 from .services.daemon import PTTDaemon
 from .services.ptt_service import PTTService
 from .audio.devices import list_input_devices
@@ -22,22 +21,41 @@ def _configure_logging(verbose: bool) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="lazy_dev push-to-talk workflow")
-    parser.add_argument("--config", type=Path, help="Optional path to overrides YAML (unused placeholder).")
-    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging output.")
+    parser.add_argument(
+        "--config",
+        type=Path,
+        help="Optional path to overrides YAML (unused placeholder).",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose logging output.",
+    )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     listen = subparsers.add_parser("listen", help="Capture audio via push-to-talk hotkey.")
     listen.add_argument("--story-id", help="Override story ID for the saved prompt.")
-    listen.add_argument("--story-title", help="Optional story title to record in metadata.")
-    listen.add_argument("--auto-move", action="store_true", help="Immediately move prompt into project-management.")
+    listen.add_argument(
+        "--story-title",
+        help="Optional story title to record in metadata.",
+    )
+    listen.add_argument(
+        "--auto-move",
+        action="store_true",
+        help="Immediately move prompt into project-management.",
+    )
 
     enhance_text = subparsers.add_parser("enhance-text", help="Enhance a text brief directly.")
     enhance_text.add_argument("--text", help="Text brief to enhance.")
     enhance_text.add_argument("--file", type=Path, help="Path to a text file containing the brief.")
     enhance_text.add_argument("--story-id", help="Optional story ID override.")
     enhance_text.add_argument("--story-title", help="Optional story title.")
-    enhance_text.add_argument("--auto-move", action="store_true", help="Immediately move prompt into project-management.")
+    enhance_text.add_argument(
+        "--auto-move",
+        action="store_true",
+        help="Immediately move prompt into project-management.",
+    )
 
     audio = subparsers.add_parser(
         "process-audio", help="Transcribe and enhance an existing audio file."

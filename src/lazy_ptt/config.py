@@ -211,7 +211,9 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
 
     ptt_config = PTTConfig(
         language=os.getenv("PTT_LANGUAGE", ptt_defaults.get("language", "en")),
-        sample_rate=_coerce_int(os.getenv("PTT_SAMPLE_RATE"), ptt_defaults.get("sample_rate", 16_000)),
+        sample_rate=_coerce_int(
+            os.getenv("PTT_SAMPLE_RATE"), ptt_defaults.get("sample_rate", 16_000)
+        ),
         chunk_duration_ms=_coerce_int(
             os.getenv("PTT_CHUNK_DURATION_MS"), ptt_defaults.get("chunk_duration_ms", 64)
         ),
