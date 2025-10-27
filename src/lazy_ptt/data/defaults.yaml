@@ -1,0 +1,18 @@
+ptt:
+  language: en
+  sample_rate: 16000
+  chunk_duration_ms: 64
+  # Reserved in Sprint 1: silence gating not applied yet
+  silence_threshold: 0.015
+  max_record_seconds: 120
+  hotkey: space
+  output_root: outputs/prompts
+whisper:
+  model_size: medium
+  device: cuda
+  compute_type: float16
+  download_root: .cache/whisper
+openai:
+  model: gpt-4o-mini
+  temperature: 0.2
+  max_output_tokens: 1800

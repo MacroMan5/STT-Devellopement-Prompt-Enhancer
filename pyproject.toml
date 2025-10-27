@@ -38,3 +38,12 @@ Issues = "https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer/issues"
 
 [project.scripts]
 lazy-ptt = "lazy_ptt.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+lazy_ptt = ["data/*.yaml"]
