@@ -61,7 +61,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print a summary to stdout after each capture.",
     )
 
-    devices = subparsers.add_parser("devices", help="List input audio devices and indices.")
+    subparsers.add_parser("devices", help="List input audio devices and indices.")
 
     return parser
 
@@ -145,7 +145,11 @@ def cmd_daemon(service: PTTService, args: argparse.Namespace) -> int:
                 f"({outcome.enhanced.work_type})"
             )
 
-    daemon = PTTDaemon(service, auto_move=auto_move, on_cycle=_log_cycle if args.verbose_cycle else None)
+    daemon = PTTDaemon(
+        service,
+        auto_move=auto_move,
+        on_cycle=_log_cycle if args.verbose_cycle else None,
+    )
     daemon.run()
     return 0
 
@@ -153,13 +157,21 @@ def cmd_daemon(service: PTTService, args: argparse.Namespace) -> int:
 def cmd_devices(_service: PTTService, _args: argparse.Namespace) -> int:
     devices = list_input_devices()
     if not devices:
-        print("No input devices found or sounddevice not installed. Install 'sounddevice' and try again.")
-        print("To select a device, set environment variable PTT_INPUT_DEVICE_INDEX to the device index.")
+        print(
+            "No input devices found or 'sounddevice' not installed. "
+            "Install it and try again."
+        )
+        print(
+            "To select a device, set env var PTT_INPUT_DEVICE_INDEX to the device index."
+        )
         return 0
     print("Input devices:")
     for idx, name in devices:
         print(f"[{idx}] {name}")
-    print("\nSelect by setting env var, e.g.: PTT_INPUT_DEVICE_INDEX=0 lazy-ptt listen")
+    print(
+        "\nSelect by setting env var, e.g.: "
+        "PTT_INPUT_DEVICE_INDEX=0 lazy-ptt listen"
+    )
     return 0
 
 

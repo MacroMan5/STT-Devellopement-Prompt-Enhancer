@@ -4,7 +4,7 @@ import io
 import threading
 import wave
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Optional
 
 import numpy as np
 

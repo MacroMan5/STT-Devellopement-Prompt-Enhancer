@@ -58,7 +58,12 @@ def build_app(service_factory=_service_from_env) -> FastAPI:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @app.post("/process-audio", response_model=ProcessAudioResponse)
-    async def process_audio(audio: UploadFile = File(...), story_id: Optional[str] = None, story_title: Optional[str] = None, auto_move: bool = False):  # type: ignore[valid-type]
+    async def process_audio(  # type: ignore[valid-type]
+        audio: UploadFile = File(...),
+        story_id: Optional[str] = None,
+        story_title: Optional[str] = None,
+        auto_move: bool = False,
+    ):
         try:
             service = service_factory()
             # Persist upload to a temp file to let existing pipeline handle formats.
@@ -81,7 +86,11 @@ def build_app(service_factory=_service_from_env) -> FastAPI:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     @app.post("/listen-once", response_model=ProcessAudioResponse)
-    def listen_once(story_id: Optional[str] = None, story_title: Optional[str] = None, auto_move: bool = False):  # type: ignore[valid-type]
+    def listen_once(  # type: ignore[valid-type]
+        story_id: Optional[str] = None,
+        story_title: Optional[str] = None,
+        auto_move: bool = False,
+    ):
         try:
             service = service_factory()
             outcome = service.listen_once(
@@ -102,4 +111,3 @@ def main() -> None:
     import uvicorn
 
     uvicorn.run("lazy_ptt.api.server:app", host="127.0.0.1", port=8000, reload=False)
-

@@ -27,7 +27,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-api = ["fastapi>=0.110.0", "uvicorn[standard]>=0.23.0", "python-multipart>=0.0.9"]
+api = [
+  "fastapi>=0.110.0",
+  "uvicorn[standard]>=0.23.0",
+  "python-multipart>=0.0.9",
+  "httpx>=0.25.0"
+]
 ui = ["rich>=13.7.0"]
 
 [project.urls]

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 try:
     import sounddevice as sd  # type: ignore
@@ -28,4 +28,3 @@ def list_input_devices() -> List[Tuple[int, str]]:
         except Exception:
             continue
     return devices
-
