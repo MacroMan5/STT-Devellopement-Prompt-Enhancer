@@ -10,7 +10,7 @@ import numpy as np
 
 try:
     import sounddevice as sd  # type: ignore
-except ImportError:  # pragma: no cover - handled via runtime check
+except Exception:  # pragma: no cover - handle missing library or PortAudio
     sd = None
 
 
