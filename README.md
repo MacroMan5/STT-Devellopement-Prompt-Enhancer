@@ -62,6 +62,8 @@ python -m lazy_ptt.cli --verbose daemon
 
 Artifacts are created under `outputs/prompts/<STORY_ID>/` by default and (with `--auto-move`) are copied to `project-management/user-story-prompts/<STORY_ID>/`.
 
+Quick verification: see `docs/SMOKE.md` or run `scripts/smoke.sh` (set `SMOKE_AUDIO=/path/to/brief.wav` to test STT).
+
 
 ## How It Works (Overview)
 - Hotkey: `pynput` listens for `PTT_HOTKEY` (default: `space`).
