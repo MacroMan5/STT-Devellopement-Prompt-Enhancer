@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import threading
-import time
 import wave
 from dataclasses import dataclass
 from typing import Callable, Optional
@@ -51,7 +50,7 @@ class AudioRecorder:
         self._stream: Optional[sd.InputStream] = None
         self._buffers: list[np.ndarray] = []
         self._lock = threading.Lock()
-        self._start_time: Optional[float] = None
+        # Internal state
 
     def _audio_callback(
         self, indata: np.ndarray, frames: int, _time_info: dict, status: sd.CallbackFlags
@@ -83,7 +82,6 @@ class AudioRecorder:
             callback=self._audio_callback,
         )
         self._stream.start()
-        self._start_time = time.monotonic()
 
     def stop(self) -> AudioBuffer:
         """Stop recording and return the captured audio as a WAV buffer."""
@@ -130,9 +128,4 @@ class AudioRecorder:
             wav_file.writeframes(pcm16.tobytes())
         return buffer.getvalue()
 
-    def record_blocking(self, on_begin: Optional[Callable[[], None]] = None) -> AudioBuffer:
-        """Record until `stop()` is called externally; helper for synchronous workflows."""
-
-        if on_begin:
-            on_begin()
-        return self.stop()
+    # Note: no blocking record helper in Sprint 1 to keep API minimal.

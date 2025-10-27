@@ -41,9 +41,13 @@ class PTTDaemon:
     def run(self) -> None:
         """Run the daemon loop until `request_stop` is called or Ctrl+C is received."""
 
+        try:
+            hotkey = self.service.config.ptt.hotkey  # type: ignore[attr-defined]
+        except Exception:
+            hotkey = "<hotkey>"
         LOGGER.info(
             "PTT daemon active: press %s to capture briefs. Press Ctrl+C to exit.",
-            self.service.config.ptt.hotkey,
+            hotkey,
         )
         try:
             while not self._stop_event.is_set():
@@ -66,4 +70,3 @@ class PTTDaemon:
         finally:
             self._stop_event.clear()
             LOGGER.info("PTT daemon shutting down.")
-

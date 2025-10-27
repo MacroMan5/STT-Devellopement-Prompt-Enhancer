@@ -8,6 +8,10 @@ from typing import Any, Dict, Optional
 
 import yaml
 from dotenv import load_dotenv
+try:  # Python 3.9+ importlib.resources modern API
+    from importlib.resources import files as _res_files  # type: ignore
+except Exception:  # pragma: no cover - fallback for very old Python
+    _res_files = None  # type: ignore
 
 
 @dataclass(frozen=True)
@@ -79,11 +83,46 @@ class ConfigError(RuntimeError):
     """Raised when mandatory configuration values are missing or invalid."""
 
 
-def _load_defaults(path: Path) -> Dict[str, Any]:
+def _load_yaml(path: Path, *, strict: bool) -> Dict[str, Any]:
+    """Load YAML file; optionally error if missing/invalid."""
+
     if not path.exists():
-        raise ConfigError(f"Missing default configuration file at {path}")
-    with path.open("r", encoding="utf-8") as handle:
-        return yaml.safe_load(handle) or {}
+        if strict:
+            raise ConfigError(f"Configuration file not found: {path}")
+        return {}
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            return yaml.safe_load(handle) or {}
+    except yaml.YAMLError as exc:
+        raise ConfigError(f"Invalid YAML in {path}: {exc}") from exc
+
+
+def _load_builtin_defaults() -> Dict[str, Any]:
+    """Load defaults shipped inside the package (works for wheels/sdists)."""
+
+    # Expect file at lazy_ptt/data/defaults.yaml
+    if _res_files is None:
+        return {}
+    try:
+        res = _res_files("lazy_ptt").joinpath("data").joinpath("defaults.yaml")
+        with res.open("r", encoding="utf-8") as handle:  # type: ignore[attr-defined]
+            return yaml.safe_load(handle) or {}
+    except FileNotFoundError:
+        return {}
+    except Exception as exc:  # pragma: no cover - defensive
+        raise ConfigError(f"Failed to load built-in defaults: {exc}") from exc
+
+
+def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    """Shallow+recursive merge for small nested config dicts."""
+
+    result = dict(base)
+    for k, v in override.items():
+        if isinstance(v, dict) and isinstance(result.get(k), dict):
+            result[k] = _deep_merge(result[k], v)  # type: ignore[arg-type]
+        else:
+            result[k] = v
+    return result
 
 
 def _coerce_int(value: Optional[str], default: int) -> int:
@@ -121,10 +160,20 @@ def _resolve_base_dir() -> Path:
 
 
 def load_config(config_path: Optional[Path] = None) -> AppConfig:
-    """Load configuration from defaults.yaml overridden by environment variables."""
+    """Load configuration with precedence: built-in defaults < file overrides < env vars.
+
+    - Built-in defaults are packaged at lazy_ptt/data/defaults.yaml.
+    - If `config_path` is provided, its values overlay built-ins (strict load).
+    - Else, if repo-local config/defaults.yaml exists, overlay it (lenient load).
+    - Environment variables finally override everything.
+    """
 
     load_dotenv()
-    defaults = _load_defaults(config_path or DEFAULT_CONFIG_PATH)
+    defaults = _load_builtin_defaults()
+    if config_path is not None:
+        defaults = _deep_merge(defaults, _load_yaml(config_path, strict=True))
+    elif DEFAULT_CONFIG_PATH.exists():
+        defaults = _deep_merge(defaults, _load_yaml(DEFAULT_CONFIG_PATH, strict=False))
 
     base_dir = _resolve_base_dir()
     project_management_root_env = os.getenv("PROJECT_MANAGEMENT_ROOT")
