@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lazy-ptt-enhancer"
+version = "0.1.0"
+description = "Push-to-talk speech-to-text + prompt enhancement toolkit"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [{name = "Therouxe", email = ""}]
+keywords = ["speech-to-text", "prompt", "push-to-talk", "llm"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
+]
+dependencies = [
+  "openai>=1.12.0",
+  "faster-whisper>=1.0.0",
+  "numpy>=1.23",
+  "sounddevice>=0.4.6",
+  "pynput>=1.7.6",
+  "python-dotenv>=1.0.1",
+  "PyYAML>=6.0.1"
+]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.110.0", "uvicorn[standard]>=0.23.0"]
+ui = ["rich>=13.7.0"]
+
+[project.urls]
+Homepage = "https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer"
+Documentation = "https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer"
+Source = "https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer"
+Issues = "https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer/issues"
+
+[project.scripts]
+lazy-ptt = "lazy_ptt.cli:main"
