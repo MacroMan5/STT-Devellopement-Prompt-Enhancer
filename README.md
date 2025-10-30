@@ -1,243 +1,641 @@
-# Lazy PTT Enhancer — Push‑to‑Talk STT + Prompt Enhancement
+# lazy-ptt-enhancer
 
-A simple developer tool that lets you capture voice notes with a hotkey, transcribe them locally using Whisper, enhance them with an LLM into a structured plan, and save the result as Markdown + JSON. Designed to be pragmatic, fast, and easy to integrate into your workflow or automations.
+> **Voice-powered development workflows** - Push-to-talk → Whisper transcription → AI enhancement → Instant feature specifications
 
-- Audio capture: press/hold the hotkey to record; release to process.
-- Local STT: faster‑whisper for transcription (GPU or CPU).
-- Prompt enhancement: OpenAI Responses API shapes the plan as JSON → Markdown.
-- Storage: saves under a staging folder and can copy into a project‑management workspace.
+[![PyPI version](https://badge.fury.io/py/lazy-ptt-enhancer.svg)](https://badge.fury.io/py/lazy-ptt-enhancer)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+**Transform voice into detailed development specifications in seconds.**
 
-## Quick Start
+Press F12 → Speak your feature brief → Release → Get enhanced prompt with objectives, risks, acceptance criteria, and more.
 
-1) Prerequisites
-- Python 3.9+
-- PortAudio runtime (for `sounddevice`)
+---
+
+## 🎯 What is This?
+
+**lazy-ptt-enhancer** is a globally-installable voice-to-prompt toolkit that:
+
+1. **Captures your voice** via push-to-talk (F12 default)
+2. **Transcribes locally** with GPU-accelerated Whisper (offline capable)
+3. **Enhances with AI** using OpenAI into structured specifications
+4. **Saves to your workspace** - Prompts appear directly in `project-management/prompts/`
+5. **Works everywhere** - Install once, use in any project directory
+
+**No copy-paste. No context switching. Just speak and code.**
+
+---
+
+## ⚡ Quick Start (5 Minutes)
+
+### 1. Install Globally
+
+```bash
+pip install lazy-ptt-enhancer
+```
+
+### 2. Initialize in Your Project
+
+```bash
+cd ~/my-awesome-project
+lazy-ptt init
+```
+
+This will:
+- ✅ Check dependencies (Python, audio devices, etc.)
+- ✅ Create `project-management/prompts/` directory
+- ✅ Generate `.env` configuration template
+- ✅ Download Whisper model (optional)
+
+### 3. Configure API Key
+
+```bash
+# Edit .env file
+OPENAI_API_KEY=sk-your-actual-api-key
+```
+
+### 4. Start Daemon (Always-On Mode)
+
+```bash
+lazy-ptt daemon --verbose-cycle
+```
+
+### 5. Use Voice Input Anytime
+
+- Press **F12**
+- Say: *"Add user authentication with OAuth2 and session management"*
+- Release **F12**
+
+**Result**: Enhanced prompt saved to `./project-management/prompts/PROMPT-{timestamp}.md`
+
+```markdown
+# FEATURE Plan
+
+**Summary**: Add user authentication with OAuth2 and session management
+
+## Objectives
+- Implement OAuth2 authentication flow
+- Add JWT-based session management
+- Create user profile management
+
+## Acceptance Criteria
+- [ ] Users can sign in with Google/GitHub
+- [ ] Sessions persist across browser restarts
+- [ ] Users can view and edit their profile
+
+---
+
+🎤 Generated with lazy-ptt-enhancer by @therouxe
+```
+
+---
+
+## 🚀 Features
+
+### Core Features
+
+- ✅ **Global installation** - Install once with pip, use anywhere
+- ✅ **Per-project initialization** - `lazy-ptt init` in any directory
+- ✅ **Push-to-talk audio capture** - F12 (configurable via CLI)
+- ✅ **Local Whisper transcription** - GPU-accelerated, offline capable
+- ✅ **AI prompt enhancement** - Structured output with objectives, risks, criteria
+- ✅ **Workspace-aware storage** - Saves to current directory's `project-management/prompts/`
+- ✅ **Auto-move by default** - No staging folder (configurable via `--no-auto-move`)
+- ✅ **Always-on daemon mode** - Background process for any project
+- ✅ **Claude Code integration** - Designed for plugin compatibility
+- ✅ **Branded output** - Attribution to @therouxe in all generated prompts
+
+### Advanced Features
+
+- ⚡ **GPU acceleration** - CUDA support for faster transcription
+- 🌐 **Multi-language** - Transcribe in English, Spanish, French, German, etc.
+- 🎛️ **Fully configurable** - Environment variables, CLI flags, or YAML config
+- 🔒 **Privacy-first** - Whisper runs locally, only enhancement hits API
+- 📊 **Metadata tracking** - JSON metadata alongside each prompt
+- 🔌 **REST API** - FastAPI server for non-Python clients
+- 🎚️ **Device selection** - Choose your microphone with `lazy-ptt devices`
+
+---
+
+## 📦 Installation
+
+### Prerequisites
+
+- **Python 3.9+** (3.11+ recommended)
+- **PortAudio** (for audio capture)
   - macOS: `brew install portaudio`
-  - Debian/Ubuntu: `sudo apt-get install -y libportaudio2`
-- Optional `ffmpeg` for broader audio input
-  - macOS: `brew install ffmpeg`
-  - Debian/Ubuntu: `sudo apt-get install -y ffmpeg`
-- Optional GPU for faster‑whisper
-  - Recent NVIDIA driver + CUDA; otherwise set `WHISPER_DEVICE=cpu`
+  - Debian/Ubuntu: `sudo apt-get install libportaudio2`
+  - Windows: Included with pip packages
+- **CUDA Toolkit** (optional, for GPU acceleration)
+- **OpenAI API Key** (for prompt enhancement)
 
-2) Install (local dev)
-- Create a venv and install:
-```
-python -m venv .venv
-source .venv/bin/activate
-pip install -e '.[api,ui]'
+### Install Package
+
+```bash
+# Using pip (recommended)
+pip install lazy-ptt-enhancer
+
+# Or using uv (faster)
+uv pip install lazy-ptt-enhancer
+
+# Verify installation
+lazy-ptt --help
 ```
 
-3) Configure
-- Copy `.env.example` → `.env` and set:
+### First-Time Setup in a Project
+
+```bash
+cd ~/my-project
+lazy-ptt init
+
+# This creates:
+# - project-management/prompts/ directory
+# - .lazy-ptt/staging/ directory
+# - .env configuration template
+# - Downloads Whisper model (optional)
 ```
+
+### Configure Environment
+
+Edit the generated `.env` file:
+
+```bash
+# REQUIRED
 OPENAI_API_KEY=sk-your-key
-# For CPU only machines
-WHISPER_DEVICE=cpu
-WHISPER_COMPUTE_TYPE=int8  # or float32
-```
-- Defaults are read from `config/defaults.yaml` (if present). Environment variables override file defaults.
-- `--config` overrides: you can pass a YAML file to overlay the built‑in defaults.
-  - Precedence: built‑in defaults < repo `config/defaults.yaml` (if present) < `--config` YAML (if passed) < environment variables.
-  - Example: `python -m lazy_ptt.cli --config config/custom.yaml enhance-text --text "hello"`
 
-4) Run
-- Enhance text only (tests OpenAI):
-```
-python -m lazy_ptt.cli --verbose enhance-text --text "Add push-to-talk to our CLI" --auto-move
-```
-- Process an audio file (tests STT + OpenAI):
-```
-python -m lazy_ptt.cli --verbose process-audio path/to/brief.wav --auto-move
-```
-- Live push‑to‑talk (hold/release hotkey):
-```
-python -m lazy_ptt.cli --verbose listen --auto-move
-```
-- Always‑on daemon:
-```
-python -m lazy_ptt.cli --verbose daemon
+# OPTIONAL (defaults shown)
+WHISPER_MODEL_SIZE=medium
+WHISPER_DEVICE=auto
+PTT_HOTKEY=<f12>
 ```
 
-Artifacts are created under `outputs/prompts/<STORY_ID>/` by default and (with `--auto-move`) are copied to `project-management/user-story-prompts/<STORY_ID>/`.
+---
 
-Quick verification: see `docs/SMOKE.md` or run `scripts/smoke.sh` (set `SMOKE_AUDIO=/path/to/brief.wav` to test STT).
+## 🎤 Usage
 
+### Mode 1: Always-On Daemon (Recommended)
 
-## How It Works (Overview)
-- Hotkey: `pynput` listens for `PTT_HOTKEY` (default: `space`).
-- Record: `AudioRecorder` captures PCM from the selected mic and returns a WAV buffer.
-- Transcribe: `WhisperTranscriber` runs faster‑whisper (with VAD) and returns text + metadata.
-- Enhance: `PromptEnhancer` calls OpenAI Responses API, requesting structured JSON (work_type, sections, acceptance criteria, etc.), then renders Markdown.
-- Save/Move: `PromptStorage` writes markdown + metadata.json to staging and can relocate into `project-management`.
+Run once per work session:
 
-Key modules
-- CLI: `src/lazy_ptt/cli.py`
-- Config: `src/lazy_ptt/config.py`
-- Audio: `src/lazy_ptt/audio/recorder.py`
-- STT: `src/lazy_ptt/stt/whisper.py`
-- Enhancement: `src/lazy_ptt/prompt/enhancer.py`
-- Storage: `src/lazy_ptt/prompt/manager.py`
-- Orchestration + Daemon: `src/lazy_ptt/services/ptt_service.py`, `src/lazy_ptt/services/daemon.py`
-
-
-## Configuration Reference (env vars)
-- `OPENAI_API_KEY` (required)
-- `OPENAI_MODEL` (default `gpt-4o-mini`)
-- `OPENAI_TEMPERATURE` (default `0.2`)
-- `OPENAI_MAX_OUTPUT_TOKENS` (default `1800`)
-- `OPENAI_BASE_URL` (optional; advanced/self‑hosted)
-- `PTT_LANGUAGE` (e.g., `en`)
-- `PTT_SAMPLE_RATE` (default `16000`)
-- `PTT_CHUNK_DURATION_MS` (default `64`)
-- `PTT_HOTKEY` (default `space`)
-- `PTT_INPUT_DEVICE_INDEX` (int; select a specific mic)
-- `PTT_OUTPUT_ROOT` (default `./outputs`)
-- `WHISPER_MODEL_SIZE` (default `medium`)
-- `WHISPER_DEVICE` (`cuda` or `cpu`)
-- `WHISPER_COMPUTE_TYPE` (`float16`, `int8`, or `float32`)
-- `LAZY_PTT_HOME` (override base directory for outputs and caches)
-
-Precedence: built‑in defaults < repo `config/defaults.yaml` (if present) < `--config` YAML (if passed) < environment variables.
-
-Note on `silence_threshold`
-- In Sprint 1 this setting is reserved; no head/tail silence trimming is applied yet. A simple gate may be added in Sprint 3.
-
-
-## CLI Usage Examples
-- Enhance a text string:
-```
-python -m lazy_ptt.cli enhance-text \
-  --text "Fix 500 on POST /orders, add logging, write tests" \
-  --story-id US-123 \
-  --story-title "Fix 500 errors" \
-  --auto-move
-```
-- Enhance from a text file:
-```
-python -m lazy_ptt.cli enhance-text --file notes/brief.txt --auto-move
-```
-- Transcribe and enhance audio:
-```
-python -m lazy_ptt.cli process-audio recordings/brief.wav --auto-move
-```
-- Live PTT capture with custom hotkey and device:
-```
-PTT_HOTKEY=shift PTT_INPUT_DEVICE_INDEX=2 \
-python -m lazy_ptt.cli listen --auto-move
+```bash
+lazy-ptt daemon --verbose-cycle
 ```
 
-Output layout (example)
-```
-outputs/prompts/US-PTT-20250101-123000/
-  US-PTT-20250101-123000_enhanced-prompt.md
-  prompt-metadata.json
+**Then press F12 anytime to capture voice input in ANY directory.**
 
-project-management/user-story-prompts/US-PTT-20250101-123000/
-  US-PTT-20250101-123000_enhanced-prompt.md
-  prompt-metadata.json
-  README.txt  # contains story title when provided
+Output:
 ```
+🎤 Daemon started. Press <f12> to capture voice anytime.
+Auto-move: ✅ ENABLED (saves to project-management)
+Working directory: /home/user/my-project
 
-
-## REST API (FastAPI)
-Run the API locally:
-```
-lazy-ptt-api  # serves on http://127.0.0.1:8000
+[✅ project-management] Prompt: ./project-management/prompts/PROMPT-20251030.md (FEATURE)
 ```
 
-cURL examples
-- Enhance raw text:
-```
-curl -s http://127.0.0.1:8000/enhance-text \
-  -H 'Content-Type: application/json' \
-  -d '{"text":"Implement push-to-talk capture"}' | jq .
-```
-- Process an audio file:
-```
-curl -s -F 'audio=@notes/brief.wav' http://127.0.0.1:8000/process-audio | jq .
-```
-- Trigger a one-time PTT cycle (demo; requires active desktop session):
-```
-curl -s -X POST http://127.0.0.1:8000/listen-once | jq .
+**Tip**: The daemon works across all projects. Change directories and press F12 - prompts save to the new directory's `project-management/`.
+
+---
+
+### Mode 2: Single Voice Capture
+
+Capture one voice input and exit:
+
+```bash
+lazy-ptt listen
 ```
 
+**Press F12, speak, release F12.**
 
-## Devices
-- List available input devices and indices:
+Output:
 ```
+Push-to-talk active. Hold the configured hotkey, speak, and release to process.
+Prompt saved to: ./project-management/prompts/PROMPT-20251030-143022.md
+✅ Prompt saved to project-management workspace (auto-move enabled)
+Detected work type: FEATURE
+Summary: Add payment processing with Stripe integration
+```
+
+**Disable auto-move** (keep in staging):
+```bash
+lazy-ptt listen --no-auto-move
+```
+
+---
+
+### Mode 3: Enhance Text Brief (No Voice)
+
+Have a text brief already? Enhance it directly:
+
+```bash
+lazy-ptt enhance-text --text "Add payment processing with Stripe"
+```
+
+Or from a file:
+
+```bash
+lazy-ptt enhance-text --file brief.txt
+```
+
+---
+
+### Mode 4: Process Existing Audio File
+
+Already have a recording?
+
+```bash
+lazy-ptt process-audio recording.wav
+```
+
+Supports: `.wav`, `.mp3`, `.flac`, `.ogg`
+
+---
+
+## 🔧 Configuration
+
+### CLI Flags (Highest Priority)
+
+All settings configurable via CLI:
+
+```bash
+# Disable auto-move (keep in staging)
+lazy-ptt listen --no-auto-move
+
+# Custom story ID
+lazy-ptt listen --story-id US-3.4 --story-title "User Authentication"
+
+# Verbose logging
+lazy-ptt daemon --verbose-cycle
+```
+
+### Environment Variables (Medium Priority)
+
+```bash
+# Required
+export OPENAI_API_KEY=sk-...
+
+# Optional (defaults shown)
+export WHISPER_MODEL_SIZE=medium  # tiny, base, small, medium, large
+export WHISPER_DEVICE=auto        # auto, cpu, cuda
+export PTT_HOTKEY="<f12>"
+export PROJECT_MANAGEMENT_ROOT=./project-management
+export PTT_OUTPUT_ROOT=./project-management/prompts
+```
+
+### YAML Config (Lowest Priority)
+
+Create `.lazy-ptt.yaml` in project root (optional):
+
+```yaml
+openai:
+  api_key: ${OPENAI_API_KEY}  # Reference env vars
+  model: gpt-4
+  temperature: 0.7
+
+whisper:
+  model_size: medium
+  language: en
+  device: auto
+
+ptt:
+  hotkey: "<f12>"
+  output_root: project-management/prompts
+
+paths:
+  project_management_root: ./project-management
+```
+
+---
+
+## 🎛️ CLI Reference
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `lazy-ptt init` | Initialize lazy-ptt in current directory |
+| `lazy-ptt listen` | Capture single voice input |
+| `lazy-ptt enhance-text` | Enhance text brief (no voice) |
+| `lazy-ptt process-audio` | Transcribe + enhance audio file |
+| `lazy-ptt daemon` | Run always-on background listener |
+| `lazy-ptt devices` | List available microphones |
+| `lazy-ptt --help` | Show help message |
+
+### Common Flags
+
+```bash
+--no-auto-move           # Keep in staging (auto-move is DEFAULT)
+--story-id ID            # Override story ID (default: auto-generate)
+--story-title "Title"    # Add story title metadata
+--verbose                # Enable verbose logging
+--verbose-cycle          # Log each daemon capture cycle
+--no-download            # Skip Whisper model download (init only)
+```
+
+### Examples
+
+```bash
+# Initialize in new project
+cd ~/new-project
+lazy-ptt init
+
+# List available microphones
 lazy-ptt devices
-```
-- Select a device for the next run:
-```
-PTT_INPUT_DEVICE_INDEX=0 lazy-ptt listen
+
+# Start daemon with verbose output
+lazy-ptt daemon --verbose-cycle
+
+# Capture voice with metadata
+lazy-ptt listen --story-id US-3.4 --story-title "User Authentication"
+
+# Enhance text brief
+lazy-ptt enhance-text --text "Fix login timeout bug"
+
+# Process pre-recorded audio
+lazy-ptt process-audio demo.wav
+
+# Keep prompt in staging (disable auto-move)
+lazy-ptt listen --no-auto-move
 ```
 
+---
 
-## Services (optional)
-- systemd (Linux): copy `ops/systemd/lazy-ptt-daemon.service` to `~/.config/systemd/user/` and edit paths/env.
+## 🔌 Claude Code Integration
+
+### Pattern 1: Standalone Daemon (Simplest)
+
+**Terminal 1** (run once per session):
+```bash
+lazy-ptt daemon --verbose-cycle
 ```
-systemctl --user daemon-reload
-systemctl --user enable --now lazy-ptt-daemon
-journalctl --user -u lazy-ptt-daemon -f
+
+**Terminal 2** (use Claude Code):
+```bash
+cd ~/my-project
+claude-code
+
+# Voice workflow:
+# 1. Press F12 anywhere, say "Add OAuth2 authentication"
+# 2. Release F12
+# 3. Prompt auto-saved to ./project-management/prompts/
+# 4. In Claude Code: /lazy create-feature project-management/prompts/PROMPT-{timestamp}.md
 ```
-- launchd (macOS): copy `ops/launchd/io.lazy.ptt.daemon.plist` to `~/Library/LaunchAgents/` and edit paths/env.
+
+---
+
+### Pattern 2: Plugin Command
+
+Add to your plugin's `.claude/commands/voice.md`:
+
+```markdown
+# /voice - Capture voice input
+
+## Implementation
+
+```bash
+lazy-ptt listen --verbose
+
+# Get the last prompt path
+PROMPT_PATH=$(ls -t project-management/prompts/PROMPT-*.md | head -1)
+
+echo "✅ Prompt saved to: $PROMPT_PATH"
+echo "Next: /lazy create-feature $PROMPT_PATH"
 ```
+```
+
+Usage in Claude Code:
+```bash
+/voice
+# → Press F12, speak
+# → Prompt auto-saved
+# → Follow suggested command to create feature
+```
+
+---
+
+### Pattern 3: Background Daemon (Production)
+
+Run daemon as systemd service (Linux):
+
+```bash
+# Copy service file
+sudo cp ops/systemd/lazy-ptt-daemon.service /etc/systemd/system/
+
+# Edit paths and environment
+sudo nano /etc/systemd/system/lazy-ptt-daemon.service
+
+# Enable and start
+sudo systemctl enable lazy-ptt-daemon
+sudo systemctl start lazy-ptt-daemon
+sudo systemctl status lazy-ptt-daemon
+```
+
+Or launchd (macOS):
+
+```bash
+# Copy plist
+cp ops/launchd/io.lazy.ptt.daemon.plist ~/Library/LaunchAgents/
+
+# Edit paths
+nano ~/Library/LaunchAgents/io.lazy.ptt.daemon.plist
+
+# Load and start
 launchctl load ~/Library/LaunchAgents/io.lazy.ptt.daemon.plist
 launchctl start io.lazy.ptt.daemon
 ```
 
+**See [CLAUDE_CODE_INTEGRATION.md](./CLAUDE_CODE_INTEGRATION.md) for complete integration guide.**
 
-## Integration With Claude (or Other Agents)
-Pick what fits your template best:
+---
 
-- CLI as a tool (simplest)
-  - Shell out to `python -m lazy_ptt.cli ...` and parse stdout for: saved path, work type, summary.
-  - Tip: a `--json` output mode is planned to simplify parsing (Sprint 1/2).
+## 🌐 REST API (Optional)
 
-- Library import
-```
-from pathlib import Path
-from lazy_ptt import load_config, PTTService
+Run the API server:
 
-service = PTTService.from_config(load_config())
-outcome = service.enhance_text("Implement PTT capture", auto_move=True)
-print(outcome.saved_prompt.prompt_path)
+```bash
+lazy-ptt-api  # Serves on http://127.0.0.1:8000
 ```
 
-- REST API
-  - `POST /enhance-text`, `POST /process-audio`, `POST /listen-once` via FastAPI wrapper.
+### Endpoints
 
-- Using Claude as enhancer
-  - Add a `ClaudeEnhancer` with the same `enhance(text) -> EnhancedPrompt` contract and select via env (future option). The rest of the pipeline remains unchanged.
+```bash
+# Enhance text
+curl -X POST http://127.0.0.1:8000/enhance-text \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"Add OAuth2 authentication"}' | jq .
 
+# Process audio file
+curl -X POST http://127.0.0.1:8000/process-audio \
+  -F 'audio=@recording.wav' | jq .
 
-## Troubleshooting
-See `docs/TROUBLESHOOTING.md` for quick fixes to common issues.
-- sounddevice / PortAudio errors
-  - Install PortAudio (see prerequisites). On Linux, verify the microphone: `arecord -l` or `pactl list sources`.
-- Headless or no GUI input
-  - `pynput` may require a desktop session. On servers, prefer `process-audio` or text enhancement.
-- CUDA issues
-  - Set `WHISPER_DEVICE=cpu` and `WHISPER_COMPUTE_TYPE=int8` to avoid GPU requirements.
-- OpenAI errors
-  - Ensure `OPENAI_API_KEY` is set; for custom gateways, set `OPENAI_BASE_URL`.
-
-
-## Development
-- Install dev deps and run tests:
+# Trigger PTT capture (requires active desktop session)
+curl -X POST http://127.0.0.1:8000/listen-once | jq .
 ```
-pip install -e '.[api,ui]'
-pytest -q
+
+---
+
+## 🛠️ Troubleshooting
+
+### Issue: `lazy-ptt` command not found
+
+**Solution**:
+```bash
+pip install lazy-ptt-enhancer
+which lazy-ptt  # Verify installation
 ```
-- Unit tests live under `tests/unit/`.
-- Roadmap & tasks: see `SPRINT-1.md`, `SPRINT-2.md`, `SPRINT-3.md`.
 
-Optional dev tools
-- Lint/format via `ruff` and `black` (configured in `pyproject.toml`).
-- Pre-commit hooks are available; enable with `make setup` or `pre-commit install`.
+### Issue: No audio input detected
 
+**Solution**:
+```bash
+# List available audio devices
+lazy-ptt devices
 
-## License
-MIT — see `LICENSE`.
+# Select device by index
+PTT_INPUT_DEVICE_INDEX=1 lazy-ptt listen
+```
+
+### Issue: OpenAI API key not found
+
+**Solution**:
+```bash
+# Set in environment
+export OPENAI_API_KEY=sk-...
+
+# Or create .env file
+echo "OPENAI_API_KEY=sk-..." > .env
+```
+
+### Issue: Whisper model download fails
+
+**Solution**:
+```bash
+# Install faster-whisper
+pip install faster-whisper
+
+# Or skip download during init
+lazy-ptt init --no-download
+```
+
+### Issue: CUDA out of memory
+
+**Solution**:
+```bash
+# Use smaller Whisper model
+export WHISPER_MODEL_SIZE=small  # or base, tiny
+
+# Or force CPU mode
+export WHISPER_DEVICE=cpu
+```
+
+### Issue: Prompts not saving to project-management
+
+**Solution**:
+```bash
+# Check working directory
+pwd
+
+# Auto-move is DEFAULT, but verify:
+lazy-ptt daemon --verbose-cycle  # Should show "Auto-move: ✅ ENABLED"
+
+# If needed, re-initialize
+lazy-ptt init
+```
+
+---
+
+## 📖 Documentation
+
+- **[README.md](./README.md)** (this file) - User guide and quick start
+- **[CLAUDE_CODE_INTEGRATION.md](./CLAUDE_CODE_INTEGRATION.md)** - Plugin integration patterns
+- **[DEV_SPEC.md](./DEV_SPEC.md)** - Development specification and roadmap
+- **[PROJECT_STATUS.md](./PROJECT_STATUS.md)** - Current implementation status
+- **[examples/EXAMPLE_OUTPUT.md](./examples/EXAMPLE_OUTPUT.md)** - Sample branded output
+- **[docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)** - Detailed troubleshooting
+
+---
+
+## 🚦 Roadmap
+
+### v1.0.0 (Q1 2025) - Production Release ✅
+- ✅ Global pip install workflow
+- ✅ Per-project initialization (`lazy-ptt init`)
+- ✅ Auto-move by default (configurable)
+- ✅ Push-to-talk audio capture
+- ✅ Local Whisper transcription
+- ✅ AI prompt enhancement
+- ✅ Always-on daemon mode
+- ✅ REST API server
+- ✅ Branding footer
+- ✅ systemd/launchd service configs
+
+### v1.1.0 (Q2 2025) - Local Models
+- Local LLM support (Ollama, llama.cpp)
+- Custom enhancement profiles (security, marketing, etc.)
+- Profile hot-reload
+
+### v1.2.0 (Q2 2025) - Multi-Language
+- Multi-language transcription (auto-detect)
+- Multi-language enhancement (French, Spanish, German, etc.)
+
+### v2.0.0 (Q3 2025) - Desktop UI
+- Qt/Electron desktop app
+- Live audio levels + transcription preview
+- Session history browser
+- Visual configuration editor
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+### Development Setup
+
+```bash
+git clone https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer.git
+cd STT-Devellopement-Prompt-Enhancer
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[api,ui,stt]"
+pytest tests/
+```
+
+### Code Style
+
+- **Formatter**: Black (line length 100)
+- **Linter**: Ruff
+- **Type Checker**: Mypy (planned)
+- **Docstrings**: Google style
+
+---
+
+## 📄 License
+
+MIT License - See [LICENSE](./LICENSE) for details.
+
+Copyright (c) 2025 [@therouxe](https://github.com/therouxe)
+
+---
+
+## 🙏 Acknowledgments
+
+- **OpenAI Whisper** - Fast, accurate speech recognition
+- **faster-whisper** - GPU-accelerated Whisper implementation
+- **OpenAI API** - Powerful prompt enhancement
+- **Claude Code** - AI-assisted development workflows
+
+---
+
+## 📞 Support
+
+- **GitHub Issues**: [Report bugs or request features](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer/issues)
+- **Documentation**: [Complete guides](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer#readme)
+- **Twitter/X**: [@therouxe](https://twitter.com/therouxe)
+
+---
+
+**lazy-ptt-enhancer** - Voice-powered development workflows
+Created by [@therouxe](https://github.com/therouxe)
+
+[⭐ Star on GitHub](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer) | [📖 Documentation](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer#readme) | [🐛 Report Issues](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer/issues)

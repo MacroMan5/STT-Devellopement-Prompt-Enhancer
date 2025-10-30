@@ -5,8 +5,8 @@ ptt:
   # Reserved in Sprint 1: silence gating not applied yet
   silence_threshold: 0.015
   max_record_seconds: 120
-  hotkey: space
-  output_root: outputs/prompts
+  hotkey: <f12>
+  output_root: project-management/prompts
 whisper:
   model_size: medium
   device: cuda
