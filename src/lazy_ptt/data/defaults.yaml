@@ -16,3 +16,12 @@ openai:
   model: gpt-4o-mini
   temperature: 0.2
   max_output_tokens: 1800
+prompt:
+  filename_pattern: "{story_id}_enhanced-prompt.md"
+  metadata_filename: "prompt-metadata.json"
+branding:
+  enabled: true
+  emoji: "🎤"
+  author: "@therouxe"
+  repo_url: "https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer"
+  author_url: "https://github.com/therouxe"

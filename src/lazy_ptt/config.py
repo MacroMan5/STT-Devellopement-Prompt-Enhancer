@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
+from urllib.parse import urlparse
 
 import yaml
 from dotenv import load_dotenv
@@ -65,6 +67,89 @@ class PromptConfig:
     metadata_filename: str
 
 
+def _validate_url(url: str, field_name: str) -> str:
+    """Validate URL format and prevent injection attacks.
+
+    Args:
+        url: URL string to validate.
+        field_name: Name of the field being validated (for error messages).
+
+    Returns:
+        Validated URL string.
+
+    Raises:
+        ConfigError: If URL is invalid or potentially malicious.
+    """
+    if not url:
+        raise ConfigError(f"{field_name} cannot be empty")
+
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            raise ConfigError(f"{field_name} must use http or https scheme")
+        if not parsed.netloc:
+            raise ConfigError(f"{field_name} must have a valid domain")
+
+        # Basic injection prevention - check for suspicious characters
+        if any(char in url for char in ["\n", "\r", "\t", "<", ">"]):
+            raise ConfigError(f"{field_name} contains invalid characters")
+
+    except ValueError as e:
+        raise ConfigError(f"Invalid {field_name}: {e}")
+
+    return url
+
+
+def _sanitize_markdown_text(text: str, field_name: str) -> str:
+    """Sanitize text for safe markdown rendering.
+
+    Args:
+        text: Text to sanitize.
+        field_name: Name of the field being sanitized (for error messages).
+
+    Returns:
+        Sanitized text string.
+
+    Raises:
+        ConfigError: If text contains dangerous patterns.
+    """
+    if not text:
+        return text
+
+    # Check for potentially dangerous patterns
+    if any(char in text for char in ["\n", "\r", "\t", "<", ">"]):
+        raise ConfigError(f"{field_name} contains invalid characters")
+
+    # Escape markdown special characters in user input to prevent injection
+    # Note: We allow @ for GitHub usernames, but escape brackets/parens
+    escaped = text.replace("[", "\\[").replace("]", "\\]")
+    escaped = escaped.replace("(", "\\(").replace(")", "\\)")
+
+    return escaped
+
+
+@dataclass(frozen=True)
+class BrandingConfig:
+    """Configuration for prompt footer branding and attribution.
+
+    Controls the branding footer appended to all enhanced prompts. When enabled,
+    includes emoji, author attribution, and repository links.
+
+    Attributes:
+        enabled: Whether to include branding footer in outputs.
+        emoji: Emoji to display in the footer (e.g., "🎤").
+        author: Author attribution (e.g., "@therouxe").
+        repo_url: GitHub repository URL for the tool.
+        author_url: URL to author's GitHub profile.
+    """
+
+    enabled: bool
+    emoji: str
+    author: str
+    repo_url: str
+    author_url: str
+
+
 @dataclass(frozen=True)
 class AppConfig:
     """Aggregate configuration used by the PTT workflow."""
@@ -74,6 +159,7 @@ class AppConfig:
     whisper: WhisperConfig
     openai: OpenAIConfig
     prompt: PromptConfig
+    branding: BrandingConfig
 
 
 DEFAULT_CONFIG_PATH = Path("config") / "defaults.yaml"
@@ -150,6 +236,30 @@ def _optional_str(value: Optional[str]) -> Optional[str]:
     return stripped or None
 
 
+def _coerce_bool(value: Optional[str], default: bool) -> bool:
+    """Convert string environment variable to boolean.
+
+    Args:
+        value: Environment variable value (e.g., "true", "false", "1", "0").
+        default: Default value if variable is None or empty.
+
+    Returns:
+        Boolean value.
+
+    Raises:
+        ConfigError: If value cannot be parsed as boolean.
+    """
+    if value in (None, ""):
+        return default
+    value_lower = value.lower().strip()
+    if value_lower in ("true", "1", "yes", "on"):
+        return True
+    elif value_lower in ("false", "0", "no", "off"):
+        return False
+    else:
+        raise ConfigError(f"Expected boolean value, received {value!r}")
+
+
 def _resolve_base_dir() -> Path:
     """Determine the root directory for relative outputs and caches."""
 
@@ -195,6 +305,7 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
     whisper_defaults = defaults.get("whisper", {})
     openai_defaults = defaults.get("openai", {})
     prompt_defaults = defaults.get("prompt", {})
+    branding_defaults = defaults.get("branding", {})
 
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if not openai_api_key:
@@ -267,12 +378,56 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
         ),
     )
 
+    # Load and validate branding configuration
+    branding_emoji = os.getenv(
+        "BRANDING_EMOJI",
+        branding_defaults.get("emoji", "🎤"),
+    )
+    branding_author = os.getenv(
+        "BRANDING_AUTHOR",
+        branding_defaults.get("author", "@therouxe"),
+    )
+    branding_repo_url = os.getenv(
+        "BRANDING_REPO_URL",
+        branding_defaults.get(
+            "repo_url",
+            "https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer",
+        ),
+    )
+    branding_author_url = os.getenv(
+        "BRANDING_AUTHOR_URL",
+        branding_defaults.get("author_url", "https://github.com/therouxe"),
+    )
+
+    # Apply validation only if branding is enabled
+    branding_enabled = _coerce_bool(
+        os.getenv("BRANDING_ENABLED"),
+        branding_defaults.get("enabled", True),
+    )
+
+    if branding_enabled:
+        branding_repo_url = _validate_url(branding_repo_url, "branding.repo_url")
+        branding_author_url = _validate_url(branding_author_url, "branding.author_url")
+        branding_author = _sanitize_markdown_text(branding_author, "branding.author")
+        # Emoji can be empty, so only sanitize if non-empty
+        if branding_emoji:
+            branding_emoji = _sanitize_markdown_text(branding_emoji, "branding.emoji")
+
+    branding_config = BrandingConfig(
+        enabled=branding_enabled,
+        emoji=branding_emoji,
+        author=branding_author,
+        repo_url=branding_repo_url,
+        author_url=branding_author_url,
+    )
+
     return AppConfig(
         paths=paths,
         ptt=ptt_config,
         whisper=whisper_config,
         openai=openai_config,
         prompt=prompt_config,
+        branding=branding_config,
     )
 
 
@@ -292,6 +447,7 @@ def dump_config(config: AppConfig) -> Dict[str, Any]:
         },
         "openai": config.openai.__dict__,
         "prompt": config.prompt.__dict__,
+        "branding": config.branding.__dict__,
     }
 
 

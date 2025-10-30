@@ -9,7 +9,7 @@ try:
 except ImportError:  # pragma: no cover - handled via runtime check
     OpenAI = None
 
-from ..config import OpenAIConfig
+from ..config import BrandingConfig, OpenAIConfig
 
 
 SYSTEM_PROMPT = """
@@ -47,6 +47,7 @@ class EnhancedPrompt:
     acceptance_criteria: List[str]
     suggested_story_id: Optional[str]
     original_brief: str
+    branding: Optional[BrandingConfig] = None
 
     def to_markdown(self) -> str:
         lines: List[str] = [
@@ -83,26 +84,51 @@ class EnhancedPrompt:
             lines.append(f"_Suggested Story ID_: {self.suggested_story_id}")
             lines.append("")
 
-        # Add branding footer
-        lines.extend([
-            "---",
-            "",
-            "🎤 **Generated with [lazy-ptt-enhancer](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer)**",
-            "Created by [@therouxe](https://github.com/therouxe) | Powered by Whisper + OpenAI",
-            "[⭐ Star on GitHub](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer) | "
-            "[📖 Documentation](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer#readme) | "
-            "[🐛 Report Issues](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer/issues)",
-            "",
-        ])
+        # Add branding footer (if enabled)
+        branding = self.branding
+        if branding is None:
+            # Default branding for backward compatibility
+            branding = BrandingConfig(
+                enabled=True,
+                emoji="🎤",
+                author="@therouxe",
+                repo_url="https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer",
+                author_url="https://github.com/therouxe",
+            )
+
+        if branding.enabled:
+            emoji_prefix = f"{branding.emoji} " if branding.emoji else ""
+            lines.extend([
+                "---",
+                "",
+                f"{emoji_prefix}**Generated with [lazy-ptt-enhancer]({branding.repo_url})**",
+                f"Created by [{branding.author}]({branding.author_url}) | Powered by Whisper + OpenAI",
+                f"[⭐ Star on GitHub]({branding.repo_url}) | "
+                f"[📖 Documentation]({branding.repo_url}#readme) | "
+                f"[🐛 Report Issues]({branding.repo_url}/issues)",
+                "",
+            ])
 
         return "\n".join(lines).strip() + "\n"
 
 
 class PromptEnhancer:
-    """Wrapper responsible for calling OpenAI and shaping the result."""
+    """Wrapper responsible for calling OpenAI and shaping the result.
 
-    def __init__(self, config: OpenAIConfig, client: Optional[object] = None) -> None:
+    Args:
+        config: OpenAI API configuration.
+        branding: Optional branding configuration for footer attribution.
+        client: Optional OpenAI client (for testing/mocking).
+    """
+
+    def __init__(
+        self,
+        config: OpenAIConfig,
+        branding: Optional[BrandingConfig] = None,
+        client: Optional[object] = None,
+    ) -> None:
         self.config = config
+        self.branding = branding
         if client is not None:
             self.client = client
         else:
@@ -147,6 +173,7 @@ class PromptEnhancer:
             acceptance_criteria=_string_list(data.get("acceptance_criteria")),
             suggested_story_id=data.get("suggested_story_id"),
             original_brief=brief.strip(),
+            branding=self.branding,
         )
 
 
