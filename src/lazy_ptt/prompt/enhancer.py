@@ -13,7 +13,8 @@ from ..config import OpenAIConfig
 
 
 SYSTEM_PROMPT = """
-You are an elite software architect and product lead. Transform terse engineering briefs into full, actionable plans.
+You are an elite software architect and product lead.
+Transform terse engineering briefs into full, actionable plans.
 
 Return a JSON object with:
 - work_type: one of ["NEW_PROJECT","FEATURE","HOTFIX","REFACTOR","ENHANCEMENT","DOCUMENTATION"]
@@ -86,11 +87,11 @@ class EnhancedPrompt:
         lines.extend([
             "---",
             "",
-            "🎤 **Generated with [lazy-ptt-enhancer](https://github.com/therouxe/lazy-ptt-enhancer)**",
+            "🎤 **Generated with [lazy-ptt-enhancer](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer)**",
             "Created by [@therouxe](https://github.com/therouxe) | Powered by Whisper + OpenAI",
-            "[⭐ Star on GitHub](https://github.com/therouxe/lazy-ptt-enhancer) | "
-            "[📖 Documentation](https://github.com/therouxe/lazy-ptt-enhancer#readme) | "
-            "[🐛 Report Issues](https://github.com/therouxe/lazy-ptt-enhancer/issues)",
+            "[⭐ Star on GitHub](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer) | "
+            "[📖 Documentation](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer#readme) | "
+            "[🐛 Report Issues](https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer/issues)",
             "",
         ])
 
@@ -129,7 +130,10 @@ class PromptEnhancer:
         payload = _extract_text(response)
         data = json.loads(payload)
         sections = [
-            PromptSection(title=item.get("title", "Details"), content=item.get("content", "").strip())
+            PromptSection(
+                title=item.get("title", "Details"),
+                content=item.get("content", "").strip(),
+            )
             for item in data.get("sections", [])
         ]
 

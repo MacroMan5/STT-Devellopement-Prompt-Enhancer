@@ -8,6 +8,10 @@ from typing import Any, Dict, Optional
 
 import yaml
 from dotenv import load_dotenv
+try:  # Python 3.9+ importlib.resources modern API
+    from importlib.resources import files as _res_files  # type: ignore
+except Exception:  # pragma: no cover - fallback for very old Python
+    _res_files = None  # type: ignore
 
 
 @dataclass(frozen=True)
@@ -79,11 +83,46 @@ class ConfigError(RuntimeError):
     """Raised when mandatory configuration values are missing or invalid."""
 
 
-def _load_defaults(path: Path) -> Dict[str, Any]:
+def _load_yaml(path: Path, *, strict: bool) -> Dict[str, Any]:
+    """Load YAML file; optionally error if missing/invalid."""
+
     if not path.exists():
-        raise ConfigError(f"Missing default configuration file at {path}")
-    with path.open("r", encoding="utf-8") as handle:
-        return yaml.safe_load(handle) or {}
+        if strict:
+            raise ConfigError(f"Configuration file not found: {path}")
+        return {}
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            return yaml.safe_load(handle) or {}
+    except yaml.YAMLError as exc:
+        raise ConfigError(f"Invalid YAML in {path}: {exc}") from exc
+
+
+def _load_builtin_defaults() -> Dict[str, Any]:
+    """Load defaults shipped inside the package (works for wheels/sdists)."""
+
+    # Expect file at lazy_ptt/data/defaults.yaml
+    if _res_files is None:
+        return {}
+    try:
+        res = _res_files("lazy_ptt").joinpath("data").joinpath("defaults.yaml")
+        with res.open("r", encoding="utf-8") as handle:  # type: ignore[attr-defined]
+            return yaml.safe_load(handle) or {}
+    except FileNotFoundError:
+        return {}
+    except Exception as exc:  # pragma: no cover - defensive
+        raise ConfigError(f"Failed to load built-in defaults: {exc}") from exc
+
+
+def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    """Shallow+recursive merge for small nested config dicts."""
+
+    result = dict(base)
+    for k, v in override.items():
+        if isinstance(v, dict) and isinstance(result.get(k), dict):
+            result[k] = _deep_merge(result[k], v)  # type: ignore[arg-type]
+        else:
+            result[k] = v
+    return result
 
 
 def _coerce_int(value: Optional[str], default: int) -> int:
@@ -121,10 +160,20 @@ def _resolve_base_dir() -> Path:
 
 
 def load_config(config_path: Optional[Path] = None) -> AppConfig:
-    """Load configuration from defaults.yaml overridden by environment variables."""
+    """Load configuration with precedence: built-in defaults < file overrides < env vars.
+
+    - Built-in defaults are packaged at lazy_ptt/data/defaults.yaml.
+    - If `config_path` is provided, its values overlay built-ins (strict load).
+    - Else, if repo-local config/defaults.yaml exists, overlay it (lenient load).
+    - Environment variables finally override everything.
+    """
 
     load_dotenv()
-    defaults = _load_defaults(config_path or DEFAULT_CONFIG_PATH)
+    defaults = _load_builtin_defaults()
+    if config_path is not None:
+        defaults = _deep_merge(defaults, _load_yaml(config_path, strict=True))
+    elif DEFAULT_CONFIG_PATH.exists():
+        defaults = _deep_merge(defaults, _load_yaml(DEFAULT_CONFIG_PATH, strict=False))
 
     base_dir = _resolve_base_dir()
     project_management_root_env = os.getenv("PROJECT_MANAGEMENT_ROOT")
@@ -137,7 +186,10 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
     if prompt_output_root_env:
         prompt_output_root = Path(prompt_output_root_env).expanduser().resolve()
     else:
-        prompt_output_root = (base_dir / defaults.get("ptt", {}).get("output_root", "outputs/prompts")).resolve()
+        prompt_output_root = (
+            base_dir
+            / defaults.get("ptt", {}).get("output_root", "outputs/prompts")
+        ).resolve()
 
     ptt_defaults = defaults.get("ptt", {})
     whisper_defaults = defaults.get("whisper", {})
@@ -146,7 +198,10 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
 
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if not openai_api_key:
-        raise ConfigError("OPENAI_API_KEY is not set. Provide it via environment variable or .env file.")
+        raise ConfigError(
+            "OPENAI_API_KEY is not set. "
+            "Provide it via environment variable or .env file."
+        )
 
     paths = ProjectPaths(
         repository_root=base_dir,
@@ -156,7 +211,9 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
 
     ptt_config = PTTConfig(
         language=os.getenv("PTT_LANGUAGE", ptt_defaults.get("language", "en")),
-        sample_rate=_coerce_int(os.getenv("PTT_SAMPLE_RATE"), ptt_defaults.get("sample_rate", 16_000)),
+        sample_rate=_coerce_int(
+            os.getenv("PTT_SAMPLE_RATE"), ptt_defaults.get("sample_rate", 16_000)
+        ),
         chunk_duration_ms=_coerce_int(
             os.getenv("PTT_CHUNK_DURATION_MS"), ptt_defaults.get("chunk_duration_ms", 64)
         ),
@@ -167,14 +224,24 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
             os.getenv("PTT_MAX_RECORD_SECONDS"), ptt_defaults.get("max_record_seconds", 120)
         ),
         hotkey=os.getenv("PTT_HOTKEY", ptt_defaults.get("hotkey", "space")),
-        input_device_index=_coerce_int(os.getenv("PTT_INPUT_DEVICE_INDEX"), -1) if os.getenv("PTT_INPUT_DEVICE_INDEX") else None,
+        input_device_index=(
+            _coerce_int(os.getenv("PTT_INPUT_DEVICE_INDEX"), -1)
+            if os.getenv("PTT_INPUT_DEVICE_INDEX")
+            else None
+        ),
     )
 
     whisper_config = WhisperConfig(
-        model_size=os.getenv("WHISPER_MODEL_SIZE", whisper_defaults.get("model_size", "medium")),
+        model_size=os.getenv(
+            "WHISPER_MODEL_SIZE", whisper_defaults.get("model_size", "medium")
+        ),
         device=os.getenv("WHISPER_DEVICE", whisper_defaults.get("device", "cuda")),
-        compute_type=os.getenv("WHISPER_COMPUTE_TYPE", whisper_defaults.get("compute_type", "float16")),
-        download_root=(base_dir / whisper_defaults.get("download_root", ".cache/whisper")).resolve(),
+        compute_type=os.getenv(
+            "WHISPER_COMPUTE_TYPE", whisper_defaults.get("compute_type", "float16")
+        ),
+        download_root=(
+            base_dir / whisper_defaults.get("download_root", ".cache/whisper")
+        ).resolve(),
     )
 
     openai_config = OpenAIConfig(
@@ -200,7 +267,13 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
         ),
     )
 
-    return AppConfig(paths=paths, ptt=ptt_config, whisper=whisper_config, openai=openai_config, prompt=prompt_config)
+    return AppConfig(
+        paths=paths,
+        ptt=ptt_config,
+        whisper=whisper_config,
+        openai=openai_config,
+        prompt=prompt_config,
+    )
 
 
 def dump_config(config: AppConfig) -> Dict[str, Any]:
