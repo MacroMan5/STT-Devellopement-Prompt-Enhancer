@@ -280,6 +280,13 @@ export WHISPER_DEVICE=auto        # auto, cpu, cuda
 export PTT_HOTKEY="<f12>"
 export PROJECT_MANAGEMENT_ROOT=./project-management
 export PTT_OUTPUT_ROOT=./project-management/prompts
+
+# Branding Configuration
+export BRANDING_ENABLED=true      # Enable/disable footer branding
+export BRANDING_EMOJI="🎤"        # Emoji in footer
+export BRANDING_AUTHOR="@therouxe"  # Author attribution
+export BRANDING_REPO_URL="https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer"
+export BRANDING_AUTHOR_URL="https://github.com/therouxe"
 ```
 
 ### YAML Config (Lowest Priority)
@@ -303,6 +310,51 @@ ptt:
 
 paths:
   project_management_root: ./project-management
+
+branding:
+  enabled: true
+  emoji: "🎤"
+  author: "@therouxe"
+  repo_url: "https://github.com/MacroMan5/STT-Devellopement-Prompt-Enhancer"
+  author_url: "https://github.com/therouxe"
+```
+
+### Branding Configuration
+
+Control the footer attribution in generated prompts:
+
+**Default Behavior**: All prompts include a branded footer with attribution to @therouxe and links to the repository.
+
+**Disable Branding**: To remove the footer entirely:
+
+```bash
+# Via environment variable
+export BRANDING_ENABLED=false
+
+# Via YAML config
+branding:
+  enabled: false
+```
+
+**Customize Branding**: Modify the footer for forked/custom versions:
+
+```yaml
+branding:
+  enabled: true
+  emoji: "🚀"                    # Change emoji (or use "" for none)
+  author: "@yourname"            # Your GitHub username
+  repo_url: "https://github.com/yourname/your-fork"
+  author_url: "https://github.com/yourname"
+```
+
+**Example Custom Footer Output**:
+
+```markdown
+---
+
+🚀 **Generated with [lazy-ptt-enhancer](https://github.com/yourname/your-fork)**
+Created by [@yourname](https://github.com/yourname) | Powered by Whisper + OpenAI
+[⭐ Star on GitHub](https://github.com/yourname/your-fork) | [📖 Documentation](https://github.com/yourname/your-fork#readme) | [🐛 Report Issues](https://github.com/yourname/your-fork/issues)
 ```
 
 ---

@@ -52,7 +52,7 @@ class PTTService:
             max_record_seconds=config.ptt.max_record_seconds,
         )
         transcriber = WhisperTranscriber(config.whisper)
-        enhancer = PromptEnhancer(config.openai)
+        enhancer = PromptEnhancer(config.openai, branding=config.branding)
         storage = PromptStorage(
             output_root=config.paths.prompt_output_root,
             filename_pattern=config.prompt.filename_pattern,

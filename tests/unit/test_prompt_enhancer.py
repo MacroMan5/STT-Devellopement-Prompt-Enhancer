@@ -1,6 +1,6 @@
 import json
 
-from lazy_ptt.config import OpenAIConfig
+from lazy_ptt.config import BrandingConfig, OpenAIConfig
 from lazy_ptt.prompt.enhancer import PromptEnhancer
 
 
